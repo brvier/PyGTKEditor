@@ -1,0 +1,2 @@
+#!/bin/sh
+exec python /opt/pygtkeditor/pygtkeditor.py $1
