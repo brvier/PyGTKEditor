@@ -23,6 +23,7 @@ from subprocess import *
 import commands
 import gobject
 import pge_preferences
+import pge_recentchooser
 
 LANGUAGES = (('.R','R'),
             ('.ada','ada'),
@@ -58,6 +59,7 @@ LANGUAGES = (('.R','R'),
             ('.sh','sh'),
             ('.tcl','tcl'),
             ('texinfo','texinfo'),
+            ('.txt','None'),
             ('.vb','vbnet'),
             ('verilog','verilog'),
             ('vhdl','vhdl'),
@@ -67,14 +69,20 @@ LANGUAGES = (('.R','R'),
 class Window(hildon.Window):
   def __init__(self,filepath=None,caller=None):
     hildon.Window.__init__ (self)
-    FremantleRotation('net.khertan.pygtkeditor',self)
+    self.prefs = pge_preferences.Prefs()
+    self.prefs.load()
 
+    if self.prefs.prefs_dict['auto_rotate']==True:
+      self.rotation = FremantleRotation('net.khertan.pygtkeditor',self,mode=FremantleRotation.AUTOMATIC)
+    else:
+      self.rotation = FremantleRotation('net.khertan.pygtkeditor',self,mode=FremantleRotation.NEVER)
+    
     self.is_fullscreen = False
     
     self._parent = caller
     self.filepath=filepath
 
-    self.code_editor=pge_editor.Editor(self._detect_language(self.filepath))
+    self.code_editor=pge_editor.Editor(self._detect_language(self.filepath),font_name=self.prefs.prefs_dict['font_name'],font_size=self.prefs.prefs_dict['font_size'])
 
     self.toolbar = self.create_toolbar()
     self.add_toolbar(self.toolbar)
@@ -95,6 +103,7 @@ class Window(hildon.Window):
     self.show_all()
     self.saved=True
 
+    print filepath
     if filepath!=None:
       self.set_title(os.path.basename(filepath))
       self.open_file(filepath)
@@ -128,6 +137,30 @@ class Window(hildon.Window):
       except:
         pass
 
+  def apply_prefs(self):
+    self.prefs.load()
+    #rotate
+    if self.prefs.prefs_dict['auto_rotate']==True:
+      self.rotation.set_mode(FremantleRotation.AUTOMATIC)
+#      FremantleRotation('net.khertan.pygtkeditor',self,mode=FremantleRotation.AUTOMATIC)
+    else:
+      self.rotation.set_mode(FremantleRotation.NEVER)
+#      FremantleRotation('net.khertan.pygtkeditor',self,mode=FremantleRotation.NEVER)
+    #font / size
+    print self.prefs.prefs_dict['font_name']+" "+str(self.prefs.prefs_dict['font_size'])
+    self.code_editor.modify_font(pango.FontDescription (self.prefs.prefs_dict['font_name']+" "+str(self.prefs.prefs_dict['font_size'])))
+    
+    if self.prefs.prefs_dict['show_lines'] == True:
+      self.code_editor.set_border_window_size(gtk.TEXT_WINDOW_LEFT, 30)
+      self.code_editor.line_view = self.code_editor.get_window(gtk.TEXT_WINDOW_LEFT)
+      if self.code_editor.expose_event_cb==None:
+        self.code_editor.expose_even_cb = self.code_editor.connect("expose_event", self.code_editor.line_numbers_expose)
+    else:
+      self.code_editor.set_border_window_size(gtk.TEXT_WINDOW_LEFT, 0)
+#      self.code_editor.line_view = None
+      if self.code_editor.expose_event_cb!=None:
+        self.code_editor.disconnect(self.code_editor.expose_event_cb)
+  
   def onHideFind(self, widget):
     self.findToolBar.hide()
     self.searched_text = None
@@ -162,16 +195,14 @@ class Window(hildon.Window):
     return 'python'
     
   def _detect_language(self,filepath):
-    prefs = pge_preferences.Prefs()
-    prefs.load()
-    
+        
     if filepath==None:
-      return prefs.prefs_dict['default_language']
-            
+      return self.prefs.prefs_dict['default_language']
+                  
     for extension,lang in LANGUAGES:
       if filepath.endswith(extension.lower()):
         return lang
-    return prefs.prefs_dict['default_language']
+    return self.prefs.prefs_dict['default_language']
 
   def on_key_press(self, widget, event, *args):
     if (event.state==gtk.gdk.CONTROL_MASK):
@@ -213,19 +244,23 @@ class Window(hildon.Window):
     pge_help.Help()
 
   def save_file(self,filepath):
-    f = open(filepath,'w')
-    buf = self.code_editor.get_buffer()
-    start,end = buf.get_bounds()
-    f.write(buf.get_text(start,end))
-    f.close()
-    self.set_title(os.path.basename(filepath))
-    self.saved=True
-    self.filepath = filepath
-    note = osso.SystemNote(self._parent.context)
-    result = note.system_note_infoprint(self.filepath+' Saved')
-    language = self._detect_language(self.filepath)
-    if self.code_editor.language != language:
-      self.code_editor.reset_language(language)
+    try:
+      f = open(filepath,'w')
+      buf = self.code_editor.get_buffer()
+      start,end = buf.get_bounds()
+      f.write(buf.get_text(start,end))
+      f.close()
+      self.set_title(os.path.basename(filepath))
+      self.saved=True
+      self.filepath = filepath
+      note = osso.SystemNote(self._parent.context)
+      result = note.system_note_infoprint(self.filepath+' Saved')
+      language = self._detect_language(self.filepath)
+      if self.code_editor.language != language:
+        self.code_editor.reset_language(language)
+    except StandardError,e:
+      note = osso.SystemNote(self._parent.context)
+      result = note.system_note_dialog('An error occurs saving file :\n'+str(e))
 
   def open_dialog(self):
       #fsm = hildon.FileSystemModel()
@@ -233,18 +268,25 @@ class Window(hildon.Window):
       #fc =hildon.FileChooserDialog(self, gtk.FILE_CHOOSER_ACTION_OPEN,fsm)
       fc = gobject.new(hildon.FileChooserDialog, action=gtk.FILE_CHOOSER_ACTION_OPEN)
       fc.set_property('show-files',True)
+      fc.set_current_folder(self._parent._last_opened_folder)
       #fsm.set_property('visible-columns',7)
       #fc.set_extension('py')
       if fc.run()==gtk.RESPONSE_OK:
         filepath = fc.get_filename()
         fc.destroy()
+        self._parent._last_opened_folder = os.path.dirname(filepath)
         self._parent.create_window(filepath)
       else:
         fc.destroy()
 
   def save_as(self):
     fsm = hildon.FileSystemModel()
-    fc = hildon.FileChooserDialog(self, gtk.FILE_CHOOSER_ACTION_SAVE,fsm)
+#    fc = hildon.FileChooserDialog(self, gtk.FILE_CHOOSER_ACTION_SAVE,fsm)
+    fc = gobject.new(hildon.FileChooserDialog, action=gtk.FILE_CHOOSER_ACTION_SAVE)      
+    if self.filepath != None :
+      fc.set_current_folder(os.path.dirname(self.filepath))
+    else: 
+      fc.set_current_folder(self._parent._last_opened_folder)
     fc.set_show_hidden(True)
     fc.set_do_overwrite_confirmation(False)
 
@@ -252,9 +294,10 @@ class Window(hildon.Window):
     if fp == None:
       fp = 'Untitled'
     self.set_title(os.path.basename(fp))
+    self._parent._last_opened_folder = os.path.dirname(fp)
     fc.set_property('autonaming',False)
     fc.set_property('show-files',True)
-    fc.set_current_folder(os.path.dirname(fp))
+#    fc.set_current_folder(os.path.dirname(fp))
     fc.set_current_name(os.path.basename(fp))
 #    fc.set_extension('py')
     if fc.run()==gtk.RESPONSE_OK:
@@ -267,23 +310,25 @@ class Window(hildon.Window):
       fc.destroy()
 
   def open_file(self,filepath):
-    f = open(filepath,'r')
-    self.filepath = os.path.abspath(filepath)
-    buf = self.code_editor.get_buffer()
-    buf.begin_user_action()
-    text = f.read()
-#    text = text.replace('\n','\n\r')
-    f.close()
-    buf.begin_not_undoable_action()
-    buf.set_text(text)
-    buf.end_not_undoable_action()
-    buf.end_user_action()
-    manager = gtk.recent_manager_get_default()
-    manager.add_item('file://'+filepath)
-
-#    self.code_editor.reset_language()
-#    f.close()
-
+    try:
+      f = open(filepath,'r')
+      self.filepath = os.path.abspath(filepath)
+      buf = self.code_editor.get_buffer()
+      buf.begin_user_action()
+      text = f.read()
+      f.close()
+      buf.begin_not_undoable_action()
+      text=text.encode('UTF-8')
+      buf.set_text(text)
+      buf.end_not_undoable_action()
+      buf.end_user_action()
+      manager = gtk.recent_manager_get_default()
+      manager.add_item('file://'+filepath)
+    except StandardError,e:
+      print e
+      note = osso.SystemNote(self._parent.context)
+      result = note.system_note_dialog('An error occurs opening file :\n'+str(e))
+  
   def create_toolbar(self):
     toolbar = gtk.Toolbar()
 #    label = 'Edit'
@@ -384,13 +429,16 @@ class Window(hildon.Window):
     if label == 'New':
       self._parent.create_window() 
     elif label=='Recent':
-       fc = gtk.RecentChooserDialog("Recent Documents", self, None,(gtk.STOCK_OPEN, gtk.RESPONSE_ACCEPT))
-       if fc.run()==gtk.RESPONSE_ACCEPT:                                    
-         filepath = fc.get_current_item().get_uri()[7::]
-         fc.destroy()                                                   
-         self._parent.create_window(filepath)   
-       else:
-         fc.destroy()
+      filepath = pge_recentchooser.Dialog().get()
+      if filepath!=None:
+        self._parent.create_window(filepath)
+#       fc = gtk.RecentChooserDialog("Recent Documents", self, None,(gtk.STOCK_OPEN, gtk.RESPONSE_ACCEPT))
+#       if fc.run()==gtk.RESPONSE_ACCEPT:                                    
+#         filepath = fc.get_current_item().get_uri()[7::]
+#         fc.destroy()                                                   
+#         self._parent.create_window(filepath)   
+#       else:
+#         fc.destroy()
     elif label=='About':
       self._parent.onAbout(self)
     elif label == 'Open':

@@ -28,10 +28,11 @@ import gobject
 import copy
 import time
 from pge_defering import _DeferClass
+import hildon
 
 # defined the default styles
 DEFAULT_STYLES = {
-    'DEFAULT':      {'font': 'monospace'},
+    'DEFAULT':      {},
     'comment':      {'foreground': '#0000FF'},
     'preprocessor': {'foreground': '#A020F0'},
     'keyword':      {'foreground': '#A52A2A',
@@ -605,6 +606,7 @@ class CodeBuffer(gtk.TextBuffer):
             it.backward_to_tag_toggle(None)
 #            _log_debug("Iter at DEFAULT-start -> moved to %i (%s)"%(it.get_offset(), it.get_char()))
 
+#        hildon.hildon_gtk_window_set_progress_indicator(self.get_parent().get_parent().get_parent(), True)
         self.defer(self.update_syntax_idle,it.get_offset())        
 
     def _on_insert_text_undo(self, buf, it, text, length):

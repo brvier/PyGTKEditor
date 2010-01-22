@@ -9,7 +9,7 @@
 ## MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 ## GNU General Public License for more details.
 ##
-import py2deb
+import pypackager
 import os
 
 if __name__ == "__main__":
@@ -18,14 +18,19 @@ if __name__ == "__main__":
     except:
         pass
 
-    p=py2deb.Py2deb("pygtkeditor")
+    p=pypackager.PyPackager("pygtkeditor")
+    p.version='3.0.10'
+    p.buildversion='1'
+    p.display_name='PyGTKEditor'
     p.description="PyGTKEditor is a source code editor specially designed for devices running Maemo."
     p.author="Benoît HERVIER"
-    p.mail="khertan@khertan.net"
+    p.maintainer="Khertan"
+    p.email="khertan@khertan.net"
     p.depends = "python2.5-hildon,python2.5-gtk2,python-osso,python2.5-xml,python-dbus,python-gobject"
     p.section="user/development"
     p.arch="any"
     p.urgency="low"
+    p.bugtracker='http://bugs.maemo.org'
     p.distribution="fremantle"
     p.repository="extras-devel"
     p.icon='pygtkeditor.png'
@@ -45,10 +50,13 @@ if __name__ == "__main__":
                                      "python-mime.xml",]
     files = [ "pygtkeditor.py",
                               "pge_window.py",
+                              "pge_main.py",
+                              "pge_recentchooser.py",
                               "pge_buffer.py",
                               "pge_editor.py",
                               "pge_defering.py",
                               "pge_help.py",
+                              "pge_preferences.py",
                               "portrait.py",
                               "pygtkeditor.png"]
     for root, dirs, fs in os.walk('/home/user/MyDocs/Projects/pygtkeditor/syntax'):
@@ -59,17 +67,14 @@ if __name__ == "__main__":
 
     p["/opt/pygtkeditor"] = files
                       
-#    p["/opt/pygtkeditor/syntax"] = syntax_files
     p["/usr/share/icons/hicolor/48x48/hildon"] = ["pygtkeditor-decrease_indent.png",
                                                   "pygtkeditor-increase_indent.png",]
     p.postinstall = """#!/bin/sh
 chmod +x /usr/bin/pygtkeditor"""
 
-    print p
-    r = p.generate("3.0.1","1",changelog="""
-◦ Bug #6397
-◦ Bug #6399
-◦ Implement simple cacher in parser
-◦ Fix icon in open dialog""",tar=True,dsc=True,changes=True,build=False,src=True)
-    print r
-#scp *2.4.0-2* khertan@garage.maemo.org:/var/www/extras-devel/incoming-builder/diablo
+    p.changelog="""
+◦ Fix help text (Wrong shortcut for cut)
+◦ Fix welcome screen new button bug
+"""
+print p.generate(build_binary=False,build_src=True)
+#print p.generate(build_binary=True,build_src=False)

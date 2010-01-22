@@ -13,25 +13,49 @@ class Prefs():
     try:
       f = open(os.path.expanduser("~")+"/.pygtkeditor",'r')
       self.prefs_dict = cPickle.load(f)
+      if not self.prefs_dict.has_key('auto_rotate'):
+        self.prefs_dict['auto_rotate']=True                 
+      if not self.prefs_dict.has_key('show_lines'):
+        self.prefs_dict['show_lines']=False
+      if not self.prefs_dict.has_key('indent'):
+        self.prefs_dict['indent']='  '
+          
     except:
       self.default()
       
   def default(self):
     self.prefs_dict['hildon_text_completion']=True
-    self.prefs_dict['default_language']='python'     
-
+    self.prefs_dict['default_language']='python'
+    self.prefs_dict['font_name']='Monospace'     
+    self.prefs_dict['font_size']='12'     
+    self.prefs_dict['auto_rotate']=True     
+    self.prefs_dict['show_lines']=False
+    self.prefs_dict['indent']='  '
+    
   def store(self):
     f = open(os.path.expanduser("~")+"/.pygtkeditor",'w')
     prefs = cPickle.dump(self.prefs_dict,f)
 
-  def edit(self,parent_window):
+  def edit(self,parent_window):      
     dialog = gtk.Dialog('Preferences',parent_window,gtk.DIALOG_DESTROY_WITH_PARENT,(gtk.STOCK_OK,gtk.RESPONSE_ACCEPT))
-#    dialog = hildon.PickerDialog(parent_window)
+
     #hildon_text_completion
     w_hildon_text_completion = hildon.CheckButton(gtk.HILDON_SIZE_AUTO)
     w_hildon_text_completion.set_label('Hildon Text Completion')
     if self.prefs_dict.has_key('hildon_text_completion'):
       w_hildon_text_completion.set_active((self.prefs_dict['hildon_text_completion']==True))
+
+    #show lines numbers
+    w_show_lines = hildon.CheckButton(gtk.HILDON_SIZE_AUTO)
+    w_show_lines.set_label('Show lines numbers')
+    if self.prefs_dict.has_key('show_lines'):
+      w_show_lines.set_active((self.prefs_dict['show_lines']==True))
+
+    #auto_rotate
+    w_auto_rotate = hildon.CheckButton(gtk.HILDON_SIZE_AUTO)
+    w_auto_rotate.set_label('Auto Portrait Mode')
+    if self.prefs_dict.has_key('auto_rotate'):
+      w_auto_rotate.set_active((self.prefs_dict['auto_rotate']==True))
 
     #default_language
     w_default_language = hildon.PickerButton(gtk.HILDON_SIZE_AUTO,
@@ -48,11 +72,67 @@ class Prefs():
     if self.prefs_dict.has_key('default_language'):
       w_default_language.set_active(languages.index(self.prefs_dict['default_language']))
     
-#    vbox = gtk.VBox()
-    
+    #Font Button
+    w_font = hildon.PickerButton(gtk.HILDON_SIZE_AUTO,
+                                       hildon.BUTTON_ARRANGEMENT_VERTICAL) 
+    w_font.set_title("Font")
+    w_font_selector = hildon.TouchSelectorEntry(text=True)
+    c = parent_window.create_pango_context()
+    families = c.list_families()
+    font_names = []
+    for f in families:
+      font_names.append(f.get_name())
+    for f in font_names:
+      w_font_selector.append_text(f)
+    w_font.set_selector(w_font_selector)
+    if self.prefs_dict.has_key('font_name'):
+      w_font.set_active(font_names.index(self.prefs_dict['font_name']))
+      w_font.set_value(self.prefs_dict['font_name'])
+      
+    #Font Size Button
+    w_font_size = hildon.PickerButton(gtk.HILDON_SIZE_AUTO,
+                                       hildon.BUTTON_ARRANGEMENT_VERTICAL) 
+    w_font_size.set_title("Size")
+    w_font_size_selector = hildon.TouchSelectorEntry(text=True)
+    font_sizes = []
+    for f in range(7,49):
+      font_sizes.append(str(f))
+    for f in font_sizes:
+      w_font_size_selector.append_text(f)
+    w_font_size.set_selector(w_font_size_selector)
+    if self.prefs_dict.has_key('font_size'):
+      w_font_size.set_active(font_sizes.index(self.prefs_dict['font_size']))
+      w_font_size.set_value(self.prefs_dict['font_size'])
+
+    #Indent Button
+    w_indent = hildon.PickerButton(gtk.HILDON_SIZE_AUTO,
+                                       hildon.BUTTON_ARRANGEMENT_VERTICAL) 
+    w_indent.set_title("Indent Style")
+    w_indent_selector = hildon.TouchSelectorEntry(text=True)
+    indent_style = ['2 spaces','4 spaces','Tabulation']
+    indent_value = ['  ','    ','\t']
+    for i in range(3):
+      w_indent_selector.append_text(indent_style[i])
+    w_indent.set_selector(w_indent_selector)
+    if self.prefs_dict.has_key('indent'):
+      print self.prefs_dict['indent']
+      w_indent.set_active(indent_value.index(self.prefs_dict['indent']))
+      w_indent.set_value(indent_style[indent_value.index(self.prefs_dict['indent'])])    
+    else:
+      w_indent.set_active(0)
+      w_indent.set_value(indent_style[0])
+
     dialog.vbox.add(w_hildon_text_completion)
+    dialog.vbox.add(w_show_lines)
+    dialog.vbox.add(w_auto_rotate)
     dialog.vbox.add(w_default_language)
-    p1 = hildon.PannableArea()
+    hbox = gtk.HBox()
+    hbox.add(w_font)
+    hbox.add(w_font_size)
+    dialog.vbox.add(hbox)
+    dialog.vbox.add(w_indent)
+    
+#    p1 = hildon.PannableArea()
     #p1.set_size_request(600,400)
 #    p1.add(vbox)
 #    dialog.get_child().get_child().add(p1)
@@ -60,10 +140,16 @@ class Prefs():
     dialog.show_all()
     if(dialog.run()==gtk.RESPONSE_ACCEPT):
       self.prefs_dict['hildon_text_completion']=w_hildon_text_completion.get_active()
+      self.prefs_dict['auto_rotate']=w_auto_rotate.get_active()
+      self.prefs_dict['show_lines']=w_show_lines.get_active()
       self.prefs_dict['default_language']= w_default_language_selector.get_current_text()
+      self.prefs_dict['font_name']= w_font_selector.get_current_text()
+      self.prefs_dict['font_size']= w_font_size_selector.get_current_text()
+      self.prefs_dict['indent']= indent_value[w_indent_selector.get_active(0)]
       self.store()
+      parent_window._parent.apply_prefs()
     dialog.destroy()
-    
+        
 if __name__ == "__main__":
   prefs = Prefs()
   prefs.load()

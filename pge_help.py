@@ -19,15 +19,24 @@ import osso
 import pango
 from portrait import FremantleRotation
 import os
+import pge_preferences
 
 class Help(hildon.Window):
   def __init__(self,filepath=None,caller=None):
     hildon.Window.__init__ (self)
-    FremantleRotation('net.khertan.pygtkeditor',self)
+    self.set_title('PyGTKEditor - Help')
+    self.prefs = pge_preferences.Prefs()
+    self.prefs.load()
+
+    if self.prefs.prefs_dict['auto_rotate']==True:
+      self.rotation = FremantleRotation('net.khertan.pygtkeditor',self,mode=FremantleRotation.AUTOMATIC)
+    else:
+      self.rotation = FremantleRotation('net.khertan.pygtkeditor',self,mode=FremantleRotation.NEVER)
     
     p = hildon.PannableArea()
     t = hildon.TextView()
     t.set_editable(False)
+    t.set_wrap_mode(gtk.WRAP_WORD)
     t.get_buffer().set_text(u"""PyGTKEditor is a source code editor, specially designed for Maemo Devices.
 
 Report bugs on http://bugs.maemo.org/
@@ -39,7 +48,7 @@ Shortcuts :
 • Ctrl-W : Close file
 • Ctrl-I : Show file info
 • Ctrl-C : Copy
-• Ctrl-C : Cut
+• Ctrl-X : Cut
 • Ctrl-V : Paste
 • Ctrl-Z : Undo
 • Ctrl-Y : Redo
@@ -93,14 +102,58 @@ Hilighted "Languages":
 Roadmap :
 
 • Version 3.0.1 :
-◦ Prefs : indent size
-◦ Prefs : font and text size
-◦ Welcome screen
+◦ Fix Bug #6397
+◦ Fix Bug #6399
+◦ Implement simple cacher in parser
+◦ Fix icon in open dialog
 
-• Version 3.1.0 :
-◦ Prefs : indent size
+• Version 3.0.2 :
+◦ Prefs : default language
+◦ Prefs : default language
+◦ Prefs : Auto rotate option
 ◦ Prefs : font and text size
+◦ Prefs : enable or not word completion
+◦ Fix Bug #6522
+◦ Fix Bug #6547
+◦ Fix Bug #7021
+
+• Version 3.0.3 :
+◦ Fix Help Bug
+
+• Version 3.0.4 :
+◦ Prefs : indent size
 ◦ Welcome screen
+◦ Recent Chooser Change
+◦ Prefs show lines numbers
+
+• Version 3.0.5 :
+◦ Fix 2 syntax errors
+
+• Version 3.0.6 :
+◦ Fix None default language : #8074
+◦ Detect .txt as text file (no syntax hilight)
+
+• Version 3.0.7 :
+◦ Fix uncomplete preference file
+◦ Fix icon in package
+◦ Fix help windows title
+
+• Version 3.0.8 :
+◦ Fix syntax error
+
+• Version 3.0.9 :
+◦ Keep last opened folder when opening or saving file instead of going to MyDocs folder by default
+◦ Remove saveas menu from welcome screen
+◦ Fix Bug #8837
+◦ Add errors message when not able to open or decode file
+◦ Fix apply prefs for lines numbers
+◦ Fix recent file change in main
+◦ Fix back to begin search when there is 2 results only
+◦ Fix order of recent files
+
+•Version 3.0.10 :
+◦ Fix help text (Wrong shortcut for cut)
+◦ Fix welcome screen new button bug
 
 •Version 3.3.0 :
 ◦ Plugins

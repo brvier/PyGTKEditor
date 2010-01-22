@@ -25,12 +25,18 @@ import pge_window
 import sys
 
 class PyGTKEditor:
+
+  VERSION = '3.0.10'
+
   def __init__(self):
+    
     self.app = hildon.Program()
-    self.context = osso.Context('net.khertan.pygtkeditor','3.0.0', False)
+    self.context = osso.Context('net.khertan.pygtkeditor',self.VERSION, False)
     self.app.set_can_hibernate(True)
     self.window_list = None
     self._manage_theme()
+    
+    self._last_opened_folder = '/home/user/MyDocs/'
 
     if self.context:
       self.osso_rpc = osso.Rpc(self.context)
@@ -43,7 +49,13 @@ class PyGTKEditor:
       self.create_window(os.path.abspath(arg))
 
     if self.window_list == None:
-      self.create_window()
+      import pge_main
+      self.window_list = []
+      w = pge_main.Window(self)
+      self.window_list.append(w)
+      self.app.add_window(w)
+      w.connect("destroy", self.destroy_win)
+
 
   def cb_mime_open(self, interface, method, args, user_data):
     if method!='mime_open':
@@ -60,7 +72,7 @@ class PyGTKEditor:
     dialog.set_name("PyGTKEditor")                                             
     dialog.set_logo_icon_name("pygtkeditor")                                   
     dialog.set_comments('A source code editor for Maemo')                      
-    dialog.set_version("3.0.2")                                                
+    dialog.set_version(self.VERSION)                                                
     dialog.set_copyright("By Benoit HERVIER (aka Khertan)")                    
     dialog.set_website("http://khertan.net/")                                  
     dialog.connect ("response", lambda d, r: d.destroy())                      
@@ -128,9 +140,13 @@ class PyGTKEditor:
       self.window_list = []
     self.window_list.append(w1)
     self.app.add_window(w1)
+    
+  def apply_prefs(self):
+    for w in self.window_list:
+      w.apply_prefs()
 
 if __name__ == "__main__":
   PyGTKEditor()
-  gtk.gdk.threads_enter()
+#  gtk.gdk.threads_enter()
   gtk.main()
-  gtk.gdk.threads_leave()
+#  gtk.gdk.threads_leave()

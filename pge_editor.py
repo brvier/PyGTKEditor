@@ -35,10 +35,10 @@ class Editor (hildon.TextView):
   #############################################################################
   # @brief Initialize CodeEditor
   #############################################################################
-  def __init__ (self,language=None):
+  def __init__ (self,language=None,font_name='Monospace',font_size='11'):
 
 #    self.language_manager=gtksourceview2.LanguageManager()
-    if language != None:
+    if (language != None) and (language != 'None'):
       lang = SyntaxLoader(language)
     else:
       lang = None
@@ -49,41 +49,56 @@ class Editor (hildon.TextView):
     prefs = pge_preferences.Prefs()
     prefs.load()
     if prefs.prefs_dict['hildon_text_completion']==False:
-      pass
+      self.set_property('hildon-input-mode', gtk.HILDON_GTK_INPUT_MODE_FULL)
 
+    self.indent = prefs.prefs_dict['indent']
+    
     self.set_editable (True)
     self.no_edit_mode = True
-    self.font_size=11
-    self.modify_font (pango.FontDescription ("Monospace "+str(self.font_size)))
+    self.modify_font (pango.FontDescription (font_name+" "+str(font_size)))
     self.language = language
     self.searched_text = None
-
-#    self.connect("key-press-event", self.on_key_press)
-
-#TODO need fix
-#    self.connect("expose_event", self.line_numbers_expose)
+    self.expose_event_cb = None
+    
+    if prefs.prefs_dict['show_lines'] == True:
+      self.set_border_window_size(gtk.TEXT_WINDOW_LEFT, 30)
+      self.line_view = self.get_window(gtk.TEXT_WINDOW_LEFT)
+      self.expose_event_cb = self.connect("expose_event", self.line_numbers_expose)
+  
 #  def on_key_press(self, widget, event, *args):
 #    #CTRL-S : save
 #    if (event.keyval == gtk.keysyms.s) and (event.state==gtk.gdk.CONTROL_MASK):
 #      self.save(self.filepath)
+
+  def get_lines(self, first_y, last_y, buffer_coords, numbers):
+    text_view = self
+    # Get iter at first y
+    iter, top = text_view.get_line_at_y(first_y)
+
+    # For each iter, get its location and add it to the arrays.
+    # Stop when we pass last_y
+    count = 0
+    size = 0
+
+    while not iter.is_end():
+      y, height = text_view.get_line_yrange(iter)
+      buffer_coords.append(y)
+      line_num = iter.get_line()
+      numbers.append(line_num)
+      count += 1
+      if (y + height) >= last_y:
+        break
+      iter.forward_line()
+
+    return count
       
   def line_numbers_expose(self, widget, event, user_data=None):
     text_view = widget
 
-    # See if this expose is on the line numbers window
-    left_win = text_view.get_window(gtk.TEXT_WINDOW_LEFT)
-    right_win = text_view.get_window(gtk.TEXT_WINDOW_RIGHT)
-
-    if event.window == left_win:
-        type = gtk.TEXT_WINDOW_LEFT
-        target = left_win
-    elif event.window == right_win:
-        type = gtk.TEXT_WINDOW_RIGHT
-        target = right_win
-    else:
-        print '_nieeee'
-        return False
-
+    type = gtk.TEXT_WINDOW_LEFT
+    target = text_view.get_window(gtk.TEXT_WINDOW_LEFT)
+    target.set_background(gtk.gdk.Color(0,0,60000))
+ 
     first_y = event.area.y
     last_y = first_y + event.area.height
 
@@ -93,13 +108,12 @@ class Editor (hildon.TextView):
     numbers = []
     pixels = []
     count = self.get_lines(first_y, last_y, pixels, numbers)
-
     # Draw fully internationalized numbers!
     layout = widget.create_pango_layout("")
 
     for i in range(count):
         x, pos = text_view.buffer_to_window_coords(type, 0, pixels[i])
-        str = "%d" % numbers[i]
+        str = '%d' % numbers[i]
         layout.set_text(str)
         widget.style.paint_layout(target, widget.state, False,
                                   None, widget, None, 2, pos + 2, layout)
@@ -108,6 +122,8 @@ class Editor (hildon.TextView):
     return False
 
   def reset_language(self,language):
+    if (language == 'None'):
+      language=None
     self.language = language
     lang = SyntaxLoader(self.language)
     self.buffer.reset_language(lang)
@@ -166,6 +182,9 @@ class Editor (hildon.TextView):
       self.searched_text_count = 0
 
       start, end = buffer.get_bounds ()
+      
+      buffer.remove_tag_by_name('search_hilight',start,end)
+
       self.search_results_list=[]
 
       search_results = self.findSubstring(buffer.get_text (start, end), text)
@@ -186,7 +205,7 @@ class Editor (hildon.TextView):
     except IndexError:
       note = osso.SystemNote(self.get_parent().get_parent()._parent.context)
       result = note.system_note_infoprint("End text reached")
-      self.searched_text_count = 0
+      self.searched_text_count = -1
       
 
 
@@ -195,7 +214,7 @@ class Editor (hildon.TextView):
   #############################################################################
   def findSubstring(self,text, substring):
     searched_text=re.compile(substring)
-    return searched_text.finditer(text)
+    return searched_text.finditer(text.decode('UTF-8'))
 
   #############################################################################
   # @brief Clean useless space
@@ -245,7 +264,7 @@ class Editor (hildon.TextView):
   #############################################################################
   def indent_tab (self):
     buffer = self.get_buffer()
-    tabul=' ' * 2
+    tabul=self.indent
     if (buffer.get_selection_bounds()!=()):
       start,end=buffer.get_selection_bounds()
       for line in range(start.get_line(),end.get_line()+1):
@@ -266,8 +285,8 @@ class Editor (hildon.TextView):
         if c == '\t':
           buffer.delete(r,r)
         else:
-          e=buffer.get_iter_at_offset(r.get_offset()+ 2)
-          if (buffer.get_text(r,e)==' '* 2):
+          e=buffer.get_iter_at_offset(r.get_offset()+ len(self.indent))
+          if (buffer.get_text(r,e)==self.indent):
             buffer.delete(r,e)
     else:
       r = buffer.get_iter_at_line(buffer.get_iter_at_mark(buffer.get_insert()).get_line())
@@ -275,8 +294,8 @@ class Editor (hildon.TextView):
       if c == '\t':
         buffer.delete(r,r)
       else:
-        e=buffer.get_iter_at_offset(r.get_offset()+ 2)
-        if (buffer.get_text(r,e)==' '* 2):
+        e=buffer.get_iter_at_offset(r.get_offset()+ len(self.indent))
+        if (buffer.get_text(r,e)==self.indent):
           buffer.delete(r,e)
 
   #############################################################################
