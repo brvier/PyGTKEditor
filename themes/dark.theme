@@ -1,0 +1,41 @@
+<theme>
+<comment
+  foreground="#bfbfbf" />
+<function
+  foreground="#008A8C" />
+<string
+  foreground="#FF00FF" />
+<keyword
+  foreground="#A52A2A"
+  weight="bold" />
+<DEFAULT
+  foreground="#FFFFFF"
+  background="#000000" />
+<number
+  foreground="#FF00FF" />
+<datatype
+  foreground="#2E8B57"
+  weight="bold" />
+<link
+  foreground="#0000FF"
+  underline="single" />
+<preprocessor
+  foreground="#A020F0" />
+<mark2
+  foreground="#6A5ACD" />
+<search_hilight
+  background="yellow" />
+<special
+  foreground="#A52A2A" />
+<mark1
+  foreground="#008B8B" />
+<widget
+  foreground="#ffffff"
+  background="#000000" />
+<linesnumber
+  foreground="#ffffff"
+  background="#000000" />
+<cursor
+  foreground="#ffffff"
+  background="#000000" />
+</theme>

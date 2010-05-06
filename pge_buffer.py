@@ -2,7 +2,7 @@
 # it under the terms of the GNU Lesser General Public License as published by
 # the Free Software Foundation, either version 3 of the License, or
 # (at your option) any later version.
-# 
+#
 # This program is distributed in the hope that it will be useful,
 # but WITHOUT ANY WARRANTY; without even the implied warranty of
 # MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
@@ -24,7 +24,7 @@ import imp
 from xml.sax.handler import ContentHandler
 from xml.sax.saxutils import unescape
 import threading
-import gobject                                                         
+import gobject
 import copy
 import time
 from pge_defering import _DeferClass
@@ -32,23 +32,24 @@ import hildon
 
 # defined the default styles
 DEFAULT_STYLES = {
-    'DEFAULT':      {},
+    'DEFAULT':      {'foreground': '#000000','background': '#FFFFFF'},
     'comment':      {'foreground': '#0000FF'},
     'preprocessor': {'foreground': '#A020F0'},
     'keyword':      {'foreground': '#A52A2A',
-                     'weight': pango.WEIGHT_BOLD},
+                     'weight': 'bold'},
     'special':      {'foreground': '#A52A2A'},
     'mark1':        {'foreground': '#008B8B'},
     'mark2':        {'foreground': '#6A5ACD'},
     'string':       {'foreground': '#FF00FF'},
     'number':       {'foreground': '#FF00FF'},
     'datatype':     {'foreground': '#2E8B57',
-                     'weight': pango.WEIGHT_BOLD},
+                     'weight': 'bold'},
     'function':     {'foreground': '#008A8C'},
 
     'link':         {'foreground': '#0000FF',
-                     'underline': pango.UNDERLINE_SINGLE},
+                     'underline': 'single'},
     'search_hilight': {'background': 'yellow'}}
+
 
 def _main_is_frozen():
     """ Internal used function. """
@@ -61,12 +62,12 @@ if _main_is_frozen():
 else:
     this_module_path = os.path.abspath(os.path.dirname(__file__))
 
-# defines default-search paths for syntax-files 
+# defines default-search paths for syntax-files
 SYNTAX_PATH = [ os.path.join('.', 'syntax'),
                 this_module_path,
                 os.path.join(os.path.expanduser('~'),".pygtkeditor"),
                 os.path.join(sys.prefix,"share","pygtkeditor","syntax"),
-                '/opt/pygtkeditor/syntax']         
+                '/opt/pygtkeditor/syntax']
 
 # enable/disable debug-messages
 DEBUG_FLAG  = False
@@ -122,7 +123,7 @@ class UndoableDelete(object):
             self.mergeable = True
 
 def add_syntax_path(path_or_list):
-    """ This function adds one (string) or many (list of strings) paths to the 
+    """ This function adds one (string) or many (list of strings) paths to the
         global search-paths for syntax-files. """
     global SYNTAX_PATH
     # handle list of strings
@@ -137,16 +138,16 @@ def add_syntax_path(path_or_list):
         raise TypeError, "Argument must be path-string or list of strings"
 
 class Pattern:
-    """ More or less internal used class representing a pattern. You may use 
+    """ More or less internal used class representing a pattern. You may use
         this class to "hard-code" your syntax-definition. """
 
     def __init__(self, regexp, style="DEFAULT", group=0, flags=""):
         """ The constructor takes at least on argument: the regular-expression.
 
             The optional kwarg style defines the style applied to the string
-            matched by the regexp. 
+            matched by the regexp.
 
-            The kwarg group may be used to define which group of the regular 
+            The kwarg group may be used to define which group of the regular
             expression will be used for highlighting (Note: This means that only
             the selected group will be highlighted but the complete pattern must
             match!)
@@ -166,9 +167,9 @@ class Pattern:
             if char == 'U': flag |= re.U
             if char == 'X': flag |= re.X
 
-        # compile re        
+        # compile re
         try: self._regexp = re.compile(regexp, flag)
-        except re.error, e: 
+        except re.error, e:
             raise Exception("Invalid regexp \"%s\": %s"%(regexp,str(e)))
 
         self._group  = group
@@ -182,44 +183,44 @@ class Pattern:
         mstart, mend = m.start(self._group), m.end(self._group)
         s = start.copy(); s.forward_chars(mstart)
         e = start.copy(); e.forward_chars(mend)
-        
-        return (s,e)    
+
+        return (s,e)
 
 class KeywordList(Pattern):
-    """ This class may be used for hard-code a syntax-definition. It specifies 
-        a pattern for a keyword-list. This simplifies the definition of 
+    """ This class may be used for hard-code a syntax-definition. It specifies
+        a pattern for a keyword-list. This simplifies the definition of
         keyword-lists. """
 
     def __init__(self, keywords, style="keyword", flags=""):
-        """ The constructor takes at least on argument: A list of strings 
-            specifying the keywords to highlight. 
+        """ The constructor takes at least on argument: A list of strings
+            specifying the keywords to highlight.
 
             The optional kwarg style specifies the style used to highlight these
-            keywords. 
+            keywords.
 
-            The optional kwarg flags specifies the flags for the 
+            The optional kwarg flags specifies the flags for the
             (internal generated) regular-expression. """
         regexp = "(?:\W|^)(%s)\W"%("|".join(keywords),)
         Pattern.__init__(self, regexp, style, group=1, flags=flags)
 
 class String:
-    """ This class may be used to hard-code a syntax-definition. It simplifies 
+    """ This class may be used to hard-code a syntax-definition. It simplifies
         the definition of a "string". A "string" is something that consists of
-        a start-pattern and an end-pattern. The end-pattern may be content of 
+        a start-pattern and an end-pattern. The end-pattern may be content of
         the string if it is escaped. """
 
     def __init__(self, starts, ends, escape=None, style="string"):
-        """ The constructor needs at least two arguments: The start- and 
-            end-pattern. 
+        """ The constructor needs at least two arguments: The start- and
+            end-pattern.
 
-            The optional kwarg escape specifies a escape-sequence escaping the 
+            The optional kwarg escape specifies a escape-sequence escaping the
             end-pattern.
 
             The optional kwarg style specifies the style used to highlight the
             string. """
         try:
             self._starts  = re.compile(starts)
-        except re.error, e: 
+        except re.error, e:
             raise Exception("Invalid regexp \"%s\": %s"%(regexp,str(e)))
 
         if escape:
@@ -228,9 +229,9 @@ class String:
         else:
             end_exp = ends
 
-        try:     
+        try:
             self._ends    = re.compile(end_exp)
-        except re.error, e: 
+        except re.error, e:
             raise Exception("Invalid regexp \"%s\": %s"%(regexp,str(e)))
 
         self.tag_name = style
@@ -242,20 +243,20 @@ class String:
         start_it = start.copy()
         start_it.forward_chars(start_match.start(0))
         end_it   = end.copy()
-        
+
         end_match = self._ends.search(txt, start_match.end(0)-1)
         #print end_match
         if end_match:
-            end_it.set_offset(start.get_offset()+end_match.end(0))            
+            end_it.set_offset(start.get_offset()+end_match.end(0))
         return  start_it, end_it
 
 class LanguageDefinition:
-    """ This class is a container class for all rules (Pattern, KeywordList, 
+    """ This class is a container class for all rules (Pattern, KeywordList,
         ...) specifying the language. You have to used this class if you like
         to hard-code your syntax-definition. """
 
     def __init__(self, rules):
-      """ The constructor takes only one argument: A list of rules (i.e 
+      """ The constructor takes only one argument: A list of rules (i.e
           Pattern, KeywordList and String). """
       self._grammar = rules
       self._styles = dict()
@@ -271,16 +272,16 @@ class LanguageDefinition:
       except KeyError:
         mstart = mend = end
         mtag   = None
-        txt = buf.get_slice(start, end)    
+        txt = buf.get_slice(start, end)
 
         # search min match
         for rule in self._grammar:
             # search pattern
-            m = rule(txt, start, end)            
+            m = rule(txt, start, end)
             if not m: continue
 
             #print m
-            # prefer match with smallest start-iter 
+            # prefer match with smallest start-iter
             if (m[0].compare(mstart)) < 0:
                 mstart, mend = m
                 mtag = rule.tag_name
@@ -291,9 +292,9 @@ class LanguageDefinition:
                 mstart, mend = m
                 mtag = rule.tag_name
                 continue
-                
+
         self.cache[(buf, start, end)] = (mstart, mend, mtag)
-        return (mstart, mend, mtag)                
+        return (mstart, mend, mtag)
 
     def get_styles(self):
         return self._styles
@@ -318,7 +319,7 @@ class SyntaxLoader(ContentHandler, LanguageDefinition):
                              'double': pango.UNDERLINE_DOUBLE}
     style_style_table =     {'normal': pango.STYLE_NORMAL,
                              'oblique': pango.STYLE_OBLIQUE,
-                             'italic': pango.STYLE_ITALIC}                                                   
+                             'italic': pango.STYLE_ITALIC}
     style_scale_table =     {
                             'xx_small': pango.SCALE_XX_SMALL,
                             'x_small':  pango.SCALE_X_SMALL,
@@ -331,8 +332,8 @@ class SyntaxLoader(ContentHandler, LanguageDefinition):
 
     def __init__(self, lang_name):
         """ The constructor takes only one argument: the language name.
-            The constructor tries to load the syntax-definition from a 
-            syntax-file in one directory of the global path-list. 
+            The constructor tries to load the syntax-definition from a
+            syntax-file in one directory of the global path-list.
 
             An instance of this class IS a LanguageDefinition. You can pass it
             to the constructor of the CodeBuffer class. """
@@ -352,7 +353,7 @@ class SyntaxLoader(ContentHandler, LanguageDefinition):
 
         xml.sax.parse(fname, self)
 
-    # Dispatch start/end - document/element and chars        
+    # Dispatch start/end - document/element and chars
     def startDocument(self):
         self.__stack   = []
 
@@ -502,29 +503,92 @@ class SyntaxLoader(ContentHandler, LanguageDefinition):
         else:
             raise Exception("Unknown style-property %s"%self.__style_prop_name)
 
-        # store value            
+        # store value
         self.__style_props[self.__style_prop_name] = value
 
 class CodeBuffer(gtk.TextBuffer):
-    """ This class extends the gtk.TextBuffer to support syntax-highlighting. 
+    """ This class extends the gtk.TextBuffer to support syntax-highlighting.
         You can use this class like a normal TextBuffer. """
 
+    # some translation-tables for the style-defs:
+    style_weight_table =    {'ultralight': pango.WEIGHT_ULTRALIGHT,
+                             'light': pango.WEIGHT_LIGHT,
+                             'normal': pango.WEIGHT_NORMAL,
+                             'bold':   pango.WEIGHT_BOLD,
+                             'ultrabold': pango.WEIGHT_ULTRABOLD,
+                             'heavy': pango.WEIGHT_HEAVY}
+    style_variant_table =   {'normal': pango.VARIANT_NORMAL,
+                             'smallcaps': pango.VARIANT_SMALL_CAPS}
+    style_underline_table = {'none': pango.UNDERLINE_NONE,
+                             'single': pango.UNDERLINE_SINGLE,
+                             'double': pango.UNDERLINE_DOUBLE}
+    style_style_table =     {'normal': pango.STYLE_NORMAL,
+                             'oblique': pango.STYLE_OBLIQUE,
+                             'italic': pango.STYLE_ITALIC}
+    style_scale_table =     {
+                            'xx_small': pango.SCALE_XX_SMALL,
+                            'x_small':  pango.SCALE_X_SMALL,
+                            'small':  pango.SCALE_SMALL,
+                            'medium':  pango.SCALE_MEDIUM,
+                            'large':  pango.SCALE_LARGE,
+                            'x_large':  pango.SCALE_X_LARGE,
+                            'xx_large': pango.SCALE_XX_LARGE,
+                                                                                                                }
+    def style_convert(self,style):
+      """ Covert text value to pango style
+         (required as theme is stocked as full text xml)"""
+      for style_tag, style_value in style.iteritems():
+        # convert value
+#        print style_tag,style_value,type(style_value)
+        if style_tag in ['font','foreground','background',]:
+            continue
+        elif type(style_value) not in (str,unicode):
+            continue
+        elif style_tag == 'variant':
+            if not style_value in self.style_variant_table.keys():
+                Exception("Unknown style-variant: %s"%style_value)
+            style[style_tag] = self.style_variant_table[style_value]
+
+        elif style_tag == 'underline':
+            if not style_value in self.style_underline_table.keys():
+                Exception("Unknown underline-style: %s"%style_value)
+            style[style_tag] = self.style_underline_table[style_value]
+
+        elif style_tag == 'scale':
+            if not style_value in self.style_scale_table.keys():
+                Exception("Unknown scale-style: %s"%style_value)
+            style[style_tag] = self.style_scale_table[style_value]
+
+        elif style_tag == 'weight':
+            if not style_value in self.style_weight_table.keys():
+                Exception("Unknown style-weight: %s"%style_value)
+            style[style_tag] = self.style_weight_table[style_value]
+
+        elif style_tag == 'style':
+            if not style_value in self.style_style_table[style_value]:
+                Exception("Unknwon text-style: %s"%style_value)
+            style[style_tag] = self.style_style_table[style_value]
+
+        else:
+            raise Exception("Unknown style-property %s"%style_tag)
+      return style
+
     def __init__(self, table=None, lang=None, styles={}):
-        """ The constructor takes 3 optional arguments. 
+        """ The constructor takes 3 optional arguments.
 
             table specifies a tag-table associated with the TextBuffer-instance.
-            This argument will be passed directly to the constructor of the 
-            TextBuffer-class. 
+            This argument will be passed directly to the constructor of the
+            TextBuffer-class.
 
             lang specifies the language-definition. You have to load one using
-            the SyntaxLoader-class or you may hard-code your syntax-definition 
-            using the LanguageDefinition-class. 
+            the SyntaxLoader-class or you may hard-code your syntax-definition
+            using the LanguageDefinition-class.
 
             styles is a dictionary used to extend or overwrite the default styles
-            provided by this module (DEFAULT_STYLE) and any language specific 
+            provided by this module (DEFAULT_STYLE) and any language specific
             styles defined by the LanguageDefinition. """
         gtk.TextBuffer.__init__(self, table)
-        
+
         self.defer = _DeferClass()
 
         #undo stack init
@@ -533,12 +597,12 @@ class CodeBuffer(gtk.TextBuffer):
         self.not_undoable_action = False
         self.undo_in_progress = False
 
-        # default styles    
+        # default styles
         self.styles = DEFAULT_STYLES
 
         # update styles with lang-spec:
         if lang:
-            self.styles.update(lang.get_styles())               
+            self.styles.update(lang.get_styles())
         # update styles with user-defined
         self.styles.update(styles)
 
@@ -546,6 +610,11 @@ class CodeBuffer(gtk.TextBuffer):
         for name, props in self.styles.items():
             style = dict(self.styles['DEFAULT'])    # take default
             style.update(props)                     # and update with props
+
+            # convert value
+            style = self.style_convert(style)
+            # create tag
+#            print 'create tag : ',name,' style : ',style
             self.create_tag(name, **style)
 
         # store lang-definition
@@ -580,7 +649,7 @@ class CodeBuffer(gtk.TextBuffer):
     def _insert_space(self,buf,line,nb):
       it = buf.get_iter_at_line_index(line,0)
       buf.insert(it,nb*' ')
-     
+
     def _on_insert_text_hilight(self, buf, it, text, length):
         #auto indent
         if text=='\n':
@@ -592,10 +661,10 @@ class CodeBuffer(gtk.TextBuffer):
               self.defer(self._insert_space,buf,line,nb_space)
 
         # if no syntax defined -> nop
-        if not self._lang_def: 
-            _log_debug('language not defined') 
+        if not self._lang_def:
+            _log_debug('language not defined')
             return False
-       
+
         it = it.copy()
         it.backward_chars(length)
         if not it.begins_tag():
@@ -607,7 +676,7 @@ class CodeBuffer(gtk.TextBuffer):
 #            _log_debug("Iter at DEFAULT-start -> moved to %i (%s)"%(it.get_offset(), it.get_char()))
 
 #        hildon.hildon_gtk_window_set_progress_indicator(self.get_parent().get_parent().get_parent(), True)
-        self.defer(self.update_syntax_idle,it.get_offset())        
+        self.defer(self.update_syntax_idle,it.get_offset())
 
     def _on_insert_text_undo(self, buf, it, text, length):
         #undo managing
@@ -663,7 +732,7 @@ class CodeBuffer(gtk.TextBuffer):
         if not start.begins_tag():
             start.backward_to_tag_toggle(None)
 
-        self.defer(self.update_syntax_idle,start.get_offset())        
+        self.defer(self.update_syntax_idle,start.get_offset())
 
     def _on_delete_range_undo(self, text_buffer, start_iter, end_iter):
         def can_be_merged(prev, cur):
@@ -716,12 +785,12 @@ class CodeBuffer(gtk.TextBuffer):
     def _on_delete_range(self, buf, start, end):
         self._on_delete_range_undo(buf, start, end)
         self._on_delete_range_hilight(buf, start, end)
-        
+
     def begin_not_undoable_action(self):
         """don't record the next actions
 
         toggles self.not_undoable_action"""
-        self.not_undoable_action = True        
+        self.not_undoable_action = True
 
     def end_not_undoable_action(self):
         """record next actions
@@ -740,7 +809,7 @@ class CodeBuffer(gtk.TextBuffer):
         undo_action = self.undo_stack.pop()
         self.redo_stack.append(undo_action)
         if isinstance(undo_action, UndoableInsert):
-            _log_debug('doing delete') 
+            _log_debug('doing delete')
             start = self.get_iter_at_offset(undo_action.offset)
             stop = self.get_iter_at_offset(
                 undo_action.offset + undo_action.length
@@ -795,19 +864,20 @@ class CodeBuffer(gtk.TextBuffer):
 
     def update_syntax_idle(self,ostart,oend=None):
         #no language defined
-        if not self._lang_def: 
-            return                       
-        # if not end defined                                
-        if not oend: 
+        if not self._lang_def:
+            return
+#        hildon.hildon_gtk_window_set_progress_indicator(self.get_parent().get_parent().get_parent(), True)
+        # if not end defined
+        if not oend:
             end = self.get_end_iter()
         else:
             end = self.get_iter_at_offset(oend)
         start = self.get_iter_at_offset(ostart)
 
-        # search first rule matching txt[start..end]             
-        mstart, mend, tagname = self._lang_def(self, start, end)        
+        # search first rule matching txt[start..end]
+        mstart, mend, tagname = self._lang_def(self, start, end)
 
-        # optimisation: if mstart-mend is allready tagged with tagname 
+        # optimisation: if mstart-mend is allready tagged with tagname
         #   -> finished
         if tagname:     #if something found
             tag = self.get_tag_table().lookup(tagname)
@@ -818,16 +888,16 @@ class CodeBuffer(gtk.TextBuffer):
 #                self._apply_tags = False
                 return
 
-        # remove all tags from start..mend (mend == buffer-end if no match)        
+        # remove all tags from start..mend (mend == buffer-end if no match)
 #        self._apply_tags=True
         self.remove_all_tags(start, mend)
         # make start..mstart = DEFAUL (mstart == buffer-end if no match)
         if not start.equal(mstart):
             #_log_debug("Apply DEFAULT")
-            self.apply_tag_by_name("DEFAULT", start, mstart)                
+            self.apply_tag_by_name("DEFAULT", start, mstart)
 #        self._apply_tags=False
         # nothing found -> finished
-        if not tagname: 
+        if not tagname:
            finished = True
            return
 
@@ -838,8 +908,9 @@ class CodeBuffer(gtk.TextBuffer):
 #        self._apply_tags=False
         start = mend
 
-        if start == end: 
-            finished = True                 
+        if start == end:
+            finished = True
+#            hildon.hildon_gtk_window_set_progress_indicator(self.get_parent().get_parent().get_parent(), False)
             return
 
         self.defer(self.update_syntax_idle,start.get_offset(),end.get_offset())
@@ -863,17 +934,21 @@ class CodeBuffer(gtk.TextBuffer):
         """ Update styles. This method may be used to reset any styles at
             runtime. """
         self.styles.update(styles)
+#        print styles
 
         table = self.get_tag_table()
         for name, props in styles.items():
-            style = self.styles['DEFAULT']
+            style = self.styles['DEFAULT'].copy()
             style.update(props)
+            #convert text value
+            style = self.style_convert(style)
+
             # if tagname is unknown:
             if not table.lookup(name):
                 #_log_debug("Create tag: %s (%s)"%(name, style))
-                self.create_tag(name, **style) 
+                self.create_tag(name, **style)
             else: # update tag
                 tag = table.lookup(name)
                 #_log_debug("Update tag %s with (%s)"%(name, style))
+#                print ("Update tag %s with (%s)"%(name, style))
                 map(lambda i: tag.set_property(i[0],i[1]), style.items())
-

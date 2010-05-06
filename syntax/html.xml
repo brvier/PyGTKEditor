@@ -19,6 +19,7 @@
 	<pattern style="string">&amp;[a-zA-Z]+;</pattern>
 
 	<pattern style="keyword">&gt;</pattern>
+	<pattern style="keyword">&lt;</pattern>
 
 	<keywordlist style="keyword" flags="I">
 		<keyword>a</keyword>

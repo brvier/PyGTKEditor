@@ -10,7 +10,7 @@
 # modify it under the terms of the GNU General Public License
 # as published by the Free Software Foundation; either version 2
 # of the License, or (at your option) any later version.
-#        
+#
 # Khertan (Benoit HERVIER) khertan@khertan.net
 
 import hildon
@@ -32,17 +32,17 @@ class Help(hildon.Window):
       self.rotation = FremantleRotation('net.khertan.pygtkeditor',self,mode=FremantleRotation.AUTOMATIC)
     else:
       self.rotation = FremantleRotation('net.khertan.pygtkeditor',self,mode=FremantleRotation.NEVER)
-    
+
     p = hildon.PannableArea()
     t = hildon.TextView()
     t.set_editable(False)
     t.set_wrap_mode(gtk.WRAP_WORD)
     t.get_buffer().set_text(u"""PyGTKEditor is a source code editor, specially designed for Maemo Devices.
 
-Report bugs on http://bugs.maemo.org/
-For any comments do not hesitate to contact me at : khertan@khertan.net
+Report bugs or feature request on http://khertan.net/flyspray/
 
 Shortcuts :
+• Ctrl-N : New file
 • Ctrl-O : Open file
 • Ctrl-S : Save file
 • Ctrl-W : Close file
@@ -155,11 +155,44 @@ Roadmap :
 ◦ Fix help text (Wrong shortcut for cut)
 ◦ Fix welcome screen new button bug
 
+•Version 3.0.11 :
+◦ Fix CTRL-S shortcut
+◦ Fix html syntax
+
+•Version 3.0.12 :
+◦ Link to bugtracker
+◦ Some minor fix due to check with pylint
+◦ Fix settings window title : #9001
+◦ Fix about menu : #9326
+◦ Fix line number : #8814
+
+•Version 3.0.13 :
+◦ Link to bugtracker
+◦ Implement autoclean space at end of line feature
+
+•Version 3.0.14 :
+◦ Fix duplicate multiple lines feature
+◦ Fix line number : #8814
+
+•Version 3.0.15 :
+◦ Crash reporter implemented to reports bug to my own Bug Tracker System
+◦ Package is now provided on my own repository
+◦ Add themes support
+◦ Add ctrl-n shortcut
+
+•Version 3.0.16 :
+◦ Fix Crash reporter
+◦ Fix execute toolbar button when trying to execute new file
+◦ Fix invalid search pattern error
+
+•Version 3.0.17 :
+◦ Fix Bug #19
+
 •Version 3.3.0 :
 ◦ Plugins
 ◦ Snippet
 """)
     p.add(t)
     self.add(p)
-    
+
     self.show_all()

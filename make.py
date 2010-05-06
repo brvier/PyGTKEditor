@@ -19,7 +19,7 @@ if __name__ == "__main__":
         pass
 
     p=pypackager.PyPackager("pygtkeditor")
-    p.version='3.0.10'
+    p.version='3.0.16'
     p.buildversion='1'
     p.display_name='PyGTKEditor'
     p.description="PyGTKEditor is a source code editor specially designed for devices running Maemo."
@@ -28,9 +28,9 @@ if __name__ == "__main__":
     p.email="khertan@khertan.net"
     p.depends = "python2.5-hildon,python2.5-gtk2,python-osso,python2.5-xml,python-dbus,python-gobject"
     p.section="user/development"
-    p.arch="any"
+    p.arch="armel"
     p.urgency="low"
-    p.bugtracker='http://bugs.maemo.org'
+    p.bugtracker='http://khertan.net/flyspray/index.php?project=2'
     p.distribution="fremantle"
     p.repository="extras-devel"
     p.icon='pygtkeditor.png'
@@ -50,6 +50,7 @@ if __name__ == "__main__":
                                      "python-mime.xml",]
     files = [ "pygtkeditor.py",
                               "pge_window.py",
+                              "about.py",
                               "pge_main.py",
                               "pge_recentchooser.py",
                               "pge_buffer.py",
@@ -58,23 +59,37 @@ if __name__ == "__main__":
                               "pge_help.py",
                               "pge_preferences.py",
                               "portrait.py",
+                              "pge_theme.py",
+                              "pge_report.py",
                               "pygtkeditor.png"]
+
+    #Syntax
     for root, dirs, fs in os.walk('/home/user/MyDocs/Projects/pygtkeditor/syntax'):
       for f in fs:
         print os.path.basename(f)
         files.append('syntax/'+os.path.basename(f))
     print files
 
+    #Theme
+    for root, dirs, fs in os.walk('/home/user/MyDocs/Projects/pygtkeditor/themes'):
+      for f in fs:
+        print os.path.basename(f)
+        files.append('themes/'+os.path.basename(f))
+    print files
+
+
     p["/opt/pygtkeditor"] = files
-                      
+
     p["/usr/share/icons/hicolor/48x48/hildon"] = ["pygtkeditor-decrease_indent.png",
                                                   "pygtkeditor-increase_indent.png",]
     p.postinstall = """#!/bin/sh
-chmod +x /usr/bin/pygtkeditor"""
+chmod +x /usr/bin/pygtkeditor
+python -m compileall /home/opt/pygtkeditor"""
 
     p.changelog="""
-◦ Fix help text (Wrong shortcut for cut)
-◦ Fix welcome screen new button bug
+◦ Fix Crash reporter
+◦ Fix execute toolbar button when trying to execute new file
+◦ Fix invalid search pattern error
 """
 print p.generate(build_binary=False,build_src=True)
-#print p.generate(build_binary=True,build_src=False)
+print p.generate(build_binary=True,build_src=False)

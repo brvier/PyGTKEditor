@@ -9,7 +9,7 @@
 # modify it under the terms of the GNU General Public License
 # as published by the Free Software Foundation; either version 2
 # of the License, or (at your option) any later version.
-#        
+#
 # Khertan (Benoit HERVIER) khertan@khertan.net
 
 import hildon
@@ -35,7 +35,7 @@ class Window(hildon.Window):
       self.rotation = FremantleRotation('net.khertan.pygtkeditor',self,mode=FremantleRotation.AUTOMATIC)
     else:
       self.rotation = FremantleRotation('net.khertan.pygtkeditor',self,mode=FremantleRotation.NEVER)
-    
+
     self.is_fullscreen = False
     self._parent = caller
 
@@ -48,7 +48,7 @@ class Window(hildon.Window):
 
     self.add(self._create_ui())
     self.show_all()
-    
+
   def _create_ui(self):
     p1 = hildon.PannableArea()
     vbox = gtk.VBox()
@@ -58,12 +58,12 @@ class Window(hildon.Window):
     i = gtk.Image()
     i.set_from_icon_name('pygtkeditor',gtk.ICON_SIZE_LARGE_TOOLBAR)
     vbox.add(i)
-    
+
     hbox = gtk.HBox()
-    new_button = hildon.Button(0,0)    
+    new_button = hildon.Button(0,0)
     new_button.set_label('New')
     new_button.connect("clicked", self.menu_button_clicked, 'New')
-  
+
     open_button = hildon.Button(0,0)
     open_button.set_label('Open')
     open_button.connect("clicked", self.open_dialog)
@@ -79,7 +79,7 @@ class Window(hildon.Window):
     ritems.sort(lambda x,y: y.get_modified()-x.get_modified())
 
     if (len(ritems)>2):
-      vbox.add(gtk.Label('Recent Files'))        
+      vbox.add(gtk.Label('Recent Files'))
       self.recent_button_1=hildon.Button(0,1)
       label = ritems[0].get_uri_display()
       self.recent_button_1.set_title(os.path.basename(label))
@@ -101,9 +101,9 @@ class Window(hildon.Window):
       self.recent_button_3.set_alignment(0.0,0.0,0.0,0.5)
       vbox.add(self.recent_button_3)
       self.recent_button_3.connect("clicked", self.recent_button_clicked, label)
-      
+
     return p1
-    
+
   def recent_manager_changed(self,widget,*data):
     ritems=self.recent_manager.get_items()
     ritems.sort(lambda x,y: y.get_modified()-x.get_modified())
@@ -117,24 +117,24 @@ class Window(hildon.Window):
       label = ritems[2].get_uri_display()
       self.recent_button_3.set_title(os.path.basename(label))
       self.recent_button_3.set_value(label)
-      
-    
+
+
   def recent_button_clicked(self,button,url):
     url = button.get_value()
     self._parent.create_window(url)
-    
+
   def menu_button_clicked(self,button, label):
     if label == 'New':
-      self._parent.create_window() 
+      self._parent.create_window()
     elif label=='Recent':
       filepath = pge_recentchooser.Dialog().get()
       if filepath!=None:
         self._parent.create_window(filepath)
 #       fc = gtk.RecentChooserDialog("Recent Documents", self, None,(gtk.STOCK_OPEN, gtk.RESPONSE_ACCEPT))
-#       if fc.run()==gtk.RESPONSE_ACCEPT:                                    
+#       if fc.run()==gtk.RESPONSE_ACCEPT:
 #         filepath = fc.get_current_item().get_uri()[7::]
-#         fc.destroy()                                                   
-#         self._parent.create_window(filepath)   
+#         fc.destroy()
+#         self._parent.create_window(filepath)
 #       else:
 #         fc.destroy()
     elif label=='About':
@@ -149,7 +149,7 @@ class Window(hildon.Window):
       prefs.edit(self)
     else:
       print "Menu Button clicked: %s" % label
-  
+
   def create_menu(self):
     menu = hildon.AppMenu()
     #New
@@ -164,11 +164,11 @@ class Window(hildon.Window):
     self.open_menu_button.connect("clicked", self.menu_button_clicked, label)
     menu.append(self.open_menu_button)
     self.saveas_menu_button = hildon.GtkButton(gtk.HILDON_SIZE_AUTO)
-    self.recent_menu_button = hildon.GtkButton(gtk.HILDON_SIZE_AUTO)     
-    label = 'Recent'                                                     
-    self.recent_menu_button.set_label(label)                             
+    self.recent_menu_button = hildon.GtkButton(gtk.HILDON_SIZE_AUTO)
+    label = 'Recent'
+    self.recent_menu_button.set_label(label)
     self.recent_menu_button.connect("clicked", self.menu_button_clicked, label)
-    menu.append(self.recent_menu_button)                                 
+    menu.append(self.recent_menu_button)
 #    label = 'Save as'
 #    self.saveas_menu_button.set_label(label)
 #    self.saveas_menu_button.connect("clicked", self.menu_button_clicked, label)
@@ -183,12 +183,12 @@ class Window(hildon.Window):
     self.settings_menu_button.set_label(label)
     self.settings_menu_button.connect("clicked", self.menu_button_clicked, label)
     menu.append(self.settings_menu_button)
-    self.help_menu_button = hildon.GtkButton(gtk.HILDON_SIZE_AUTO) 
-    label = 'Help'                                             
-    self.help_menu_button.set_label(label)                   
+    self.help_menu_button = hildon.GtkButton(gtk.HILDON_SIZE_AUTO)
+    label = 'Help'
+    self.help_menu_button.set_label(label)
     self.help_menu_button.connect("clicked", self.menu_button_clicked, label)
-    menu.append(self.help_menu_button)                  
-                                              
+    menu.append(self.help_menu_button)
+
     return menu
 
   def open_dialog(self,*data):
@@ -198,7 +198,7 @@ class Window(hildon.Window):
       if fc.run()==gtk.RESPONSE_OK:
         filepath = fc.get_filename()
         fc.destroy()
-        self._parent._last_opened_folder = os.path.dirname(filepath)      
+        self._parent._last_opened_folder = os.path.dirname(filepath)
         self._parent.create_window(filepath)
       else:
         fc.destroy()
@@ -206,7 +206,7 @@ class Window(hildon.Window):
   def show_help(self):
     import pge_help
     pge_help.Help()
-    
+
   def on_key_press(self, widget, event, *args):
     if (event.state==gtk.gdk.CONTROL_MASK):
       #Open : CTRL-O
@@ -214,13 +214,13 @@ class Window(hildon.Window):
         self.open_dialog()
       #Close : CTRL-W
       elif (event.keyval == gtk.keysyms.w):
-        self.destroy() 
+        self.destroy()
       #Show Help
       elif (event.keyval == gtk.keysyms.h):
         self.show_help()
 
-  def apply_prefs(self):
-    self.prefs.load()
+  def apply_prefs(self,prefs=None,theme=None):
+    self.prefs = prefs
     #rotate
     if self.prefs.prefs_dict['auto_rotate']==True:
       self.rotation.set_mode(FremantleRotation.AUTOMATIC)
@@ -228,7 +228,7 @@ class Window(hildon.Window):
     else:
       self.rotation.set_mode(FremantleRotation.NEVER)
 #      FremantleRotation('net.khertan.pygtkeditor',self,mode=FremantleRotation.NEVER)
-    
+
 if __name__ == "__main__":
   Window()
   gtk.main()
