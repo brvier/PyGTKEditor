@@ -93,5 +93,5 @@ python -m compileall /home/opt/pygtkeditor"""
 ◦ Fix #23
 ◦ Add python -m compileall in postinst script
 """
-print p.generate(build_binary=False,build_src=True)
+#print p.generate(build_binary=False,build_src=True)
 print p.generate(build_binary=True,build_src=False)
