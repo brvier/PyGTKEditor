@@ -19,7 +19,7 @@ if __name__ == "__main__":
         pass
 
     p=pypackager.PyPackager("pygtkeditor")
-    p.version='3.0.16'
+    p.version='3.0.17'
     p.buildversion='1'
     p.display_name='PyGTKEditor'
     p.description="PyGTKEditor is a source code editor specially designed for devices running Maemo."
@@ -87,9 +87,11 @@ chmod +x /usr/bin/pygtkeditor
 python -m compileall /home/opt/pygtkeditor"""
 
     p.changelog="""
-◦ Fix Crash reporter
-◦ Fix execute toolbar button when trying to execute new file
-◦ Fix invalid search pattern error
+◦ Test for keyboard open or not for auto rotation
+◦ Fix #25
+◦ Fix #19
+◦ Fix #23
+◦ Add python -m compileall in postinst script
 """
 print p.generate(build_binary=False,build_src=True)
 print p.generate(build_binary=True,build_src=False)

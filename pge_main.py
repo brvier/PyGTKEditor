@@ -107,7 +107,7 @@ class Window(hildon.Window):
   def recent_manager_changed(self,widget,*data):
     ritems=self.recent_manager.get_items()
     ritems.sort(lambda x,y: y.get_modified()-x.get_modified())
-    if (len(ritems)>2):
+    if (len(ritems)>2) and (self.hasattr('recent_button_1')):
       label = ritems[0].get_uri_display()
       self.recent_button_1.set_title(os.path.basename(label))
       self.recent_button_1.set_value(label)

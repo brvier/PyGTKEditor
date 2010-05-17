@@ -927,7 +927,7 @@ class CodeBuffer(gtk.TextBuffer):
             self.update_styles(self._lang_def.get_styles())
         # and ...
 #        self._apply_tags = True
-        self.defer(self.update_syntax_idle,start.get_offset)
+        self.defer(self.update_syntax_idle,start.get_offset()) #fix #25
 #        self._apply_tags = False
 
     def update_styles(self, styles):

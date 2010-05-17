@@ -337,7 +337,7 @@ class Window(hildon.Window):
     if fc.run()==gtk.RESPONSE_OK:
       filepath = fc.get_filename()
       fc.destroy()
-      if type(filepath) != str: #fix #19
+      if type(filepath) == str: # fix #19 - fix #23
         self.save_file(filepath)
         manager = gtk.recent_manager_get_default()
         manager.add_item('file://'+filepath)
