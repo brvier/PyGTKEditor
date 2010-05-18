@@ -57,13 +57,13 @@ def Report(text,email):
         if the_page == '200':
           return True
         else:
-        print response
+          print response
           error()
           return False
-  except Exception, detail:
-      error()
-      print detail
-      return False
+    except Exception, detail:
+        error()
+        print detail
+        return False
 
 #A small gtk Dialog
 def ErrorReportDialog(trace,txt_email=None):
