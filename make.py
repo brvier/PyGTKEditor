@@ -19,7 +19,7 @@ if __name__ == "__main__":
         pass
 
     p=pypackager.PyPackager("pygtkeditor")
-    p.version='3.0.18'
+    p.version='3.0.19'
     p.buildversion='1'
     p.display_name='PyGTKEditor'
     p.description="PyGTKEditor is a source code editor specially designed for devices running Maemo."
