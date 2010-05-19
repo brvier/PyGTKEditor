@@ -188,6 +188,12 @@ Roadmap :
 •Version 3.0.17 :
 ◦ Fix Bug #19
 
+•Version 3.0.18 :
+◦ Fix crash reporter
+
+•Version 3.0.19 :
+◦ Fix auto portrait
+
 •Version 3.3.0 :
 ◦ Plugins
 ◦ Snippet

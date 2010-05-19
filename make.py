@@ -87,7 +87,7 @@ chmod +x /usr/bin/pygtkeditor
 python -m compileall /home/opt/pygtkeditor"""
 
     p.changelog="""
-â—Fix pge_report¦
+â—Fix autorotate¦
 """
 #print p.generate(build_binary=False,build_src=True)
 print p.generate(build_binary=True,build_src=False)

@@ -29,7 +29,7 @@ import pge_report
 
 class PyGTKEditor:
 
-  VERSION = '3.0.17'
+  VERSION = '3.0.19'
   pge_report.install_excepthook("PyGTKEditor", VERSION)
 
   def __init__(self):

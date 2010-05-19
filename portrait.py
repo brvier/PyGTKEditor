@@ -24,8 +24,8 @@ import hildon
 import osso
 
 # Replace this with your own gettext() functionality
-import gpodder
-_ = gpodder.gettext
+#import gpodder
+#_ = gpodder.gettext
 
 
 class FremantleRotation(object):
@@ -43,7 +43,7 @@ class FremantleRotation(object):
     AUTOMATIC, NEVER, ALWAYS = range(3)
 
     # Human-readable captions for the above constants
-    MODE_CAPTIONS = (_('Automatic'), _('Landscape'), _('Portrait'))
+    MODE_CAPTIONS = (('Automatic'), ('Landscape'), ('Portrait'))
 
     # Privately-used constants
     _PORTRAIT, _LANDSCAPE = ('portrait', 'landscape')
