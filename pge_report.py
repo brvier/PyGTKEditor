@@ -36,17 +36,15 @@ def Report(text,email):
     import urllib
     import urllib2
 
-    url = 'http://khertan.net/flyspray/bugreport.php?do=newtask&project=2' # write ur URL here
+    url = 'http://khertan.net/bugdar/newreport.php' # write ur URL here
     values = {
-          'project_id' : '2',
-          'item_summary': text.split('\n')[0],
-          'task_type':'1',
-          'product_category':'0',
-          'task_severity':'2',
-          'task_priority':'2',
-          'product_version':'1',
-          'detailed_desc':text+'\nReported by '+email,
-          'anon_email':email,
+          'do' : 'insert',
+          'summary': text.split('\n')[0],
+          'product':'5,0,5',
+          'custom1':'3.0.19',
+          'severity':'major',
+          'statut':'1',
+          'comment':text+'\nReported by '+email,
           }
 
     try:
@@ -54,15 +52,14 @@ def Report(text,email):
         req = urllib2.Request(url, data)
         response = urllib2.urlopen(req)
         the_page = response.read()
-        if the_page == '200':
-          return True
-        else:
-          print response
-          error()
-          return False
     except Exception, detail:
         error()
         print detail
+        return False
+
+    if 'The bug has been added to the database.' in the_page:
+        return True
+    else:
         return False
 
 #A small gtk Dialog
