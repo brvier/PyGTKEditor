@@ -11,9 +11,9 @@ PyGTKEditor is a source code editor specially designed for Maemo devices.
 Screenshots
 -----------
 
-![PyGTKEditor Editor](http://khertan.net/medias/medias/pygtkeditor_editor.jpg)
+![PyGTKEditor Editor](http://khertan.net/medias/pygtkeditor_editor.jpg)
 
-![PyGTKEditor Welcome](http://khertan.net/medias/medias/pygtkeditor_welcome.jpg)
+![PyGTKEditor Welcome](http://khertan.net/medias/pygtkeditor_welcome.jpg)
 
 Licence
 ---------
